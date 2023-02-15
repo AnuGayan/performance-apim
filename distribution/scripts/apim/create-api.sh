@@ -183,7 +183,7 @@ admin_token=$(get_admin_access_token)
 
 # Find "PerformanceTestAPP" ID
 echo "Getting PerformanceTestAPP ID"
-application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications?query=PerformanceTestAPP" | jq -r '.list[0] | .applicationId')
+application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/applications?query=PerformanceTestAPP" | jq -r '.list[0] | .applicationId')
 
 if [ ! -z $application_id ] && [ ! $application_id = "null" ]; then
     echo "Found application id for \"PerformanceTestAPP\": $application_id"
@@ -218,24 +218,24 @@ EOF
 echo "Finding Consumer Key for PerformanceTestAPP"
 
 # Check if keys exists
-keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications/$application_id/keys/PRODUCTION")
+keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/applications/$application_id/keys/PRODUCTION")
 consumer_key=$(echo $keys_response | jq -r '.consumerKey')
 if [ ! -z $consumer_key ] && [ ! $consumer_key = "null" ]; then
     echo "Keys already generated for \"PerformanceTestAPP\". Consumer key is $consumer_key"
 else
     echo "Keys not generated for \"PerformanceTestAPP\". Generating keys"
     # temp fix
-    get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v2/key-managers")
+    get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v3/key-managers")
 
     # Generate Keys
-    keys_response=$($curl_command -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(generate_keys_request)" "${base_https_url}/api/am/devportal/v2/applications/$application_id/generate-keys")
+    keys_response=$($curl_command -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(generate_keys_request)" "${base_https_url}/api/am/devportal/v3/applications/$application_id/generate-keys")
     consumer_key=$(echo $keys_response | jq -r '.consumerKey')
     if [ ! -z $consumer_key ] && [ ! $consumer_key = "null" ]; then
         echo "Keys generated for \"PerformanceTestAPP\". Consumer key is $consumer_key"
     else
         echo "Failed to generate keys for \"PerformanceTestAPP\""
         # Get Key from application
-        keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications/$application_id")
+        keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/applications/$application_id")
         consumer_key=$(echo $keys_response | jq -r '.keys[0] | .consumerKey')
         if [ ! -z $consumer_key ] && [ ! $consumer_key = "null" ]; then
             echo "Retrieved keys for \"PerformanceTestAPP\". Consumer key is $consumer_key"
@@ -317,11 +317,11 @@ create_api() {
         echo -ne "\n"
         if (confirm "Delete $api_name API?"); then
             # Check subscriptions first
-            local subscription_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/subscriptions?apiId=$existing_api_id" | jq -r '.list[0] | .subscriptionId')
+            local subscription_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/subscriptions?apiId=$existing_api_id" | jq -r '.list[0] | .subscriptionId')
             if [ ! -z $subscription_id ] && [ ! $subscription_id = "null" ]; then
                 echo "Subscription found for $api_name API. Subscription ID is $subscription_id"
                 # Delete subscription
-                local delete_subscription_status=$($curl_command -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $subscribe_access_token" -X DELETE "${base_https_url}/api/am/devportal/v2/subscriptions/$subscription_id")
+                local delete_subscription_status=$($curl_command -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $subscribe_access_token" -X DELETE "${base_https_url}/api/am/devportal/v3/subscriptions/$subscription_id")
                 if [ $delete_subscription_status -eq 200 ]; then
                     echo "Subscription $subscription_id deleted!"
                     echo -ne "\n"
@@ -417,7 +417,7 @@ create_api() {
         fi
     fi
     echo "Subscribing $api_name API to PerformanceTestAPP"
-    local subscription_id=$($curl_command -H "Authorization: Bearer $sub_manage_token" -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/devportal/v2/subscriptions" | jq -r '.subscriptionId')
+    local subscription_id=$($curl_command -H "Authorization: Bearer $sub_manage_token" -H "Content-Type: application/json" -d "$(subscription_request $api_id)" "${base_https_url}/api/am/devportal/v3/subscriptions" | jq -r '.subscriptionId')
     if [ ! -z $subscription_id ] && [ ! $subscription_id = "null" ]; then
         echo "Successfully subscribed $api_name API to PerformanceTestAPP. Subscription ID is $subscription_id"
         echo -ne "\n"

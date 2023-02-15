@@ -148,9 +148,9 @@ mediation_policy_create_token=$(get_access_token mediation_policy_create)
 sub_manage_token=$(get_access_token sub_manage) 
 admin_token=$(get_admin_access_token)
 # temp fix
-get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v2/key-managers")
+get_keymanager=$($curl_command -H "Authorization: Bearer $app_access_token" "${base_https_url}/api/am/devportal/v3/key-managers")
 # To add subscriber to AM_SUBSCRIBER table. Else, application addition will give an error.
-application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications?query=app1" | jq -r '.list[0] | .applicationId')
+application_id=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/applications?query=app1" | jq -r '.list[0] | .applicationId')
 
 mkdir -p "$script_dir/target"
 ## Creating an empty csv file to store the consumer key and consumer secrets of the applications
@@ -163,7 +163,7 @@ count=1
 #Iterate the loop until count is less than or equal to no_of_apps
 while [ $count -le $no_of_apps ]
 do
-    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/v2/applications" | jq -r '.applicationId')
+    application_id=$($curl_command -X POST -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(app_request $count)" "${base_https_url}/api/am/devportal/v3/applications" | jq -r '.applicationId')
     if [ ! -z $application_id ] && [ ! $application_id = "null" ]; then
         echo "Found application id for \"app$count\": $application_id"
     else
@@ -174,7 +174,7 @@ do
     echo "Generating keys for app"$count""
 
     # Generate Keys
-    keys_response=$($curl_command -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(generate_keys_request)" "${base_https_url}/api/am/devportal/v2/applications/$application_id/generate-keys")
+    keys_response=$($curl_command -H "Authorization: Bearer $app_access_token" -H "Content-Type: application/json" -d "$(generate_keys_request)" "${base_https_url}/api/am/devportal/v3/applications/$application_id/generate-keys")
     consumer_key=$(echo $keys_response | jq -r '.consumerKey')
     consumer_secret=$(echo $keys_response | jq -r '.consumerSecret')
 
@@ -183,7 +183,7 @@ do
     else
         echo "Failed to generate keys for \"app$count\""
         # Get Key from application
-        keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v2/applications/$application_id")
+        keys_response=$($curl_command -H "Authorization: Bearer $subscribe_access_token" "${base_https_url}/api/am/devportal/v3/applications/$application_id")
         consumer_key=$(echo $keys_response | jq -r '.keys[0] | .consumerKey')
         if [ ! -z $consumer_key ] && [ ! $consumer_key = "null" ]; then
             echo "Retrieved keys for \"app$count\". Consumer key is $consumer_key"
