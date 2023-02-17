@@ -76,11 +76,12 @@ do
     tokens_file="$script_dir/target/jwt_tokens_$consumer_key.csv"
     generate_tokens_command="java -Xms128m -Xmx128m -jar $script_dir/token-generation-artifacts/jwt-generator-0.1.1-SNAPSHOT.jar \
         --key-store-file $script_dir/token-generation-artifacts/wso2carbon.jks --consumer-key $consumer_key\
-        --tokens-count $tokens_count --output-file $tokens_file --apim-host $apim_host"
+        --tokens-count $tokens_count --output-file $tokens_file --apim-host $apim_host --consumer-secret $consumer_secret"
     echo "Generating Tokens: $generate_tokens_command"
     $generate_tokens_command
     cat $tokens_file >> $jwt_tokens_file
     rm $tokens_file
 done < $client_keys_file
 
+echo "Generating Tokens: done"
 

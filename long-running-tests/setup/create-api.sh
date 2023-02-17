@@ -317,7 +317,7 @@ create_api() {
 
         if [ ! -z "$mediation_sequence" ]; then
             echo "Adding mediation policy to $api_name API"
-            local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F type=in -F mediationPolicyFile=@$script_dir/sequences/$mediation_sequence "${base_https_url}/api/am/publisher/v4/apis/${api_id}/mediation-policies" | jq -r '.id')
+            local sequence_id=$($curl_command -H "Authorization: Bearer $admin_token" -F type=in -F mediationPolicyFile=@$script_dir/sequences/$mediation_sequence "${base_https_url}/api/am/publisher/v4/apis/${api_id}/resource-policies" | jq -r '.id')
             if [ ! -z $sequence_id ] && [ ! $sequence_id = "null" ]; then
                 echo "Mediation policy added with ID $sequence_id"
                 echo -ne "\n"
